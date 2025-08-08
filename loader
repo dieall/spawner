@@ -1,0 +1,9 @@
+local games = {
+    [8303902695] = "https://raw.githubusercontent.com/YourGithubUsername/eggspawner/main/Egg%20Randomizer.txt"
+}
+
+if games[game.PlaceId] then
+    loadstring(game:HttpGet(games[game.PlaceId]))()
+else
+    game.Players.LocalPlayer:Kick("Game not supported!")
+end
