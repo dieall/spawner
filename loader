@@ -1,5 +1,5 @@
 local games = {
-    [8303902695] = "https://raw.githubusercontent.com/YourGithubUsername/eggspawner/main/Egg%20Randomizer.txt"
+    [8303902695] = "https://raw.githubusercontent.com/dieall/spawner/main/Egg%20Randomizer.txt"
 }
 
 if games[game.PlaceId] then
