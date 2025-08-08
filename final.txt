@@ -1,0 +1,97 @@
+-- Minimal Roblox service setup for GUI-only loader
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- 🌿 GUI Setup
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "PetHatchGui"
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 290) -- Match original height
+frame.Position = UDim2.new(0, 20, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(0, 128, 128) -- Match original color
+frame.BackgroundTransparency = 0.1 -- Match original transparency
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10) -- Add rounded corners back
+-- Remove UICorner for sharp rectangle
+
+-- Title Section
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "🌸 MaoMao UI  💊"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 22
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- 👤 Credit
+local credit = Instance.new("TextLabel", frame)
+credit.Size = UDim2.new(1, 0, 0, 20)
+credit.Position = UDim2.new(0, 0, 0, 22)
+credit.BackgroundTransparency = 1
+credit.Text = "V2 - @maomaogag on YT"
+credit.Font = Enum.Font.FredokaOne
+credit.TextSize = 14
+credit.TextColor3 = Color3.fromRGB(200, 200, 200)
+
+-- Button Data (matches image exactly)
+local buttonData = {
+    {text = "🎲 Pet Randomizer", color = Color3.fromRGB(233, 143, 170), onClick = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ShiraInuba01/maomaoscripts/main/Egg%20Randomizer.txt"))()
+    end},
+    {text = "🕒 Auto Age Pet 50", color = Color3.fromRGB(205, 92, 122), onClick = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ShiraInuba01/maomaoscripts/main/Lvl50Egg.txt"))()
+    end},
+    {text = "🔬 Mutation Finder", color = Color3.fromRGB(134, 87, 133), onClick = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ShiraInuba01/maomaoscripts/main/PetMutationFinder.txt"))()
+    end},
+    {text = "NEW 🧬 Duplicator", color = Color3.fromRGB(99, 74, 153), onClick = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ShiraInuba01/maomaoscripts/main/Item%20Randomizer.txt"))()
+    end},
+    {text = "COMMING SOON\nSPAWNER", color = Color3.fromRGB(40, 43, 74), disabled = true},
+}
+
+for i, btn in ipairs(buttonData) do
+    local b = Instance.new("TextButton", frame)
+    b.Size = UDim2.new(1, -20, 0, 40) -- Match main UI width
+    b.Position = UDim2.new(0, 10, 0, 40 + (i-1)*50) -- Match main UI spacing
+    b.BackgroundColor3 = btn.color
+    b.Text = btn.text
+    b.TextSize = 20 -- Match main UI text size
+    b.Font = Enum.Font.FredokaOne
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    -- No UICorner for sharp rectangle
+    if btn.disabled then
+        b.AutoButtonColor = false
+        b.TextTransparency = 0.3
+        b.BackgroundTransparency = 0.2
+        b.Active = false
+    else
+        b.MouseButton1Click:Connect(btn.onClick)
+    end
+end
+
+-- 👇 Dragging (keep drag logic for usability)
+local drag = Instance.new("TextButton", title)
+drag.Size = UDim2.new(1, 0, 1, 0)
+drag.Text = ""
+drag.BackgroundTransparency = 1
+
+local dragging, offset
+drag.MouseButton1Down:Connect(function()
+    dragging = true
+    offset = Vector2.new(mouse.X - frame.Position.X.Offset, mouse.Y - frame.Position.Y.Offset)
+end)
+UserInputService.InputEnded:Connect(function()
+    dragging = false
+end)
+RunService.RenderStepped:Connect(function()
+    if dragging then
+        frame.Position = UDim2.new(0, mouse.X - offset.X, 0, mouse.Y - offset.Y)
+    end
+end)
+

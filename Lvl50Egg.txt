@@ -1,0 +1,148 @@
+-- LocalScript (put in StarterPlayerScripts or StarterGui)
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "FakeAgeChanger"
+screenGui.ResetOnSpawn = false
+
+-- Frame
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 220, 0, 140)
+frame.Position = UDim2.new(0.4, 0, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 128, 128) -- Match Main UI
+frame.BackgroundTransparency = 0.1 -- Match Main UI
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+-- Make frame draggable (like Main UI)
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local mouse = player:GetMouse()
+local dragging, offset
+local dragArea = Instance.new("TextButton", frame)
+dragArea.Size = UDim2.new(1, 0, 0, 28)
+dragArea.Position = UDim2.new(0, 0, 0, 0)
+dragArea.Text = ""
+dragArea.BackgroundTransparency = 1
+dragArea.ZIndex = 2
+dragArea.AutoButtonColor = false
+
+dragArea.MouseButton1Down:Connect(function()
+    dragging = true
+    offset = Vector2.new(mouse.X - frame.Position.X.Offset, mouse.Y - frame.Position.Y.Offset)
+end)
+UserInputService.InputEnded:Connect(function()
+    dragging = false
+end)
+RunService.RenderStepped:Connect(function()
+    if dragging then
+        frame.Position = UDim2.new(0, mouse.X - offset.X, 0, mouse.Y - offset.Y)
+    end
+end)
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Text = "🕒 <b>Auto Age Pet to 50</b>"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 28)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.RichText = true
+
+-- Static Equipped Pet label
+local equippedLabel = Instance.new("TextLabel", frame)
+equippedLabel.Text = "<b>Equipped Pet:</b>"
+equippedLabel.Font = Enum.Font.FredokaOne
+equippedLabel.TextSize = 18
+equippedLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
+equippedLabel.BackgroundTransparency = 1
+equippedLabel.Size = UDim2.new(1, 0, 0, 22)
+equippedLabel.Position = UDim2.new(0, 0, 0, 32)
+equippedLabel.RichText = true
+
+-- Dynamic pet info label
+local petInfo = Instance.new("TextLabel", frame)
+petInfo.Text = "None"
+petInfo.Font = Enum.Font.FredokaOne
+petInfo.TextSize = 18
+petInfo.TextColor3 = Color3.fromRGB(255, 220, 80)
+petInfo.BackgroundTransparency = 1
+petInfo.Size = UDim2.new(1, 0, 0, 32) -- Increased height for wrapping
+petInfo.Position = UDim2.new(0, 0, 0, 54)
+petInfo.RichText = true
+petInfo.TextWrapped = true
+petInfo.TextScaled = false -- Set to true if you want the text to shrink to fit
+
+-- Button
+local button = Instance.new("TextButton", frame)
+button.Size = UDim2.new(0.9, 0, 0, 36)
+button.Position = UDim2.new(0.05, 0, 0, 95)
+button.BackgroundColor3 = Color3.fromRGB(160, 90, 160)
+button.Text = "<b>Set Age to 50</b>"
+button.Font = Enum.Font.FredokaOne
+button.TextSize = 20
+button.TextColor3 = Color3.new(1, 1, 1)
+button.AutoButtonColor = false
+button.RichText = true
+-- No UICorner for button (rectangle)
+
+local TweenService = game:GetService("TweenService")
+local buttonDefault = Color3.fromRGB(160, 90, 160)
+local buttonHover = buttonDefault:Lerp(Color3.new(1,1,1), 0.2)
+
+button.MouseEnter:Connect(function()
+    TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = buttonHover}):Play()
+end)
+button.MouseLeave:Connect(function()
+    TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = buttonDefault}):Play()
+end)
+
+-- Function to find the equipped pet Tool
+local function getEquippedPetTool()
+	character = player.Character or player.CharacterAdded:Wait()
+	for _, child in pairs(character:GetChildren()) do
+		if child:IsA("Tool") and child.Name:find("Age") then
+			return child
+		end
+	end
+	return nil
+end
+
+-- Update the dynamic pet info label
+local function updatePetInfo()
+	local pet = getEquippedPetTool()
+	if pet then
+		petInfo.Text = pet.Name
+	else
+		petInfo.Text = "None"
+	end
+end
+
+button.MouseButton1Click:Connect(function()
+	local tool = getEquippedPetTool()
+	if tool then
+		for i = 20, 1, -1 do
+			button.Text = "<b>Changing Age in " .. i .. "...</b>"
+			wait(1)
+		end
+		local newName = tool.Name:gsub("%[Age%s%d+%]", "[Age 50]")
+		tool.Name = newName
+		updatePetInfo()
+		button.Text = "<b>Set Age to 50</b>"
+	else
+		button.Text = "<b>No Pet Equipped!</b>"
+		wait(2)
+		button.Text = "<b>Set Age to 50</b>"
+	end
+end)
+
+-- Periodically update pet info
+while true do
+	task.wait(1)
+	updatePetInfo()
+end
